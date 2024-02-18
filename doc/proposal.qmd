@@ -1,7 +1,7 @@
 ---
-title: "Proposal: [Your project name]"
+title: "Proposal: [Maximizing ROI using Machine Learning]"
 subtitle: "DATA 450 Capstone"
-author: "[Your Name]"
+author: "[Matthew Zimmermann]"
 date: today
 date-format: long
 bibliography: references.bib
@@ -13,65 +13,45 @@ jupyter: python3
 
 # Introduction
 
-[This section should contain background and introduction to your general topic.]
+Since the beggining of the financial markets, people have been trying to find every possible way to maximize a return on their investments while maintaining a level of risk managment that allows them to trade safely. The golden question of, "can the stock market be predicted?" has been asked and studied for a long time. It seemed as if predicting the stock market was an impossible feat, and can still very much be so, however, with the introduction of machine learning into the financial world, it seems that the answer is getting closer and closer to being solved. The introduction of machine learning is revolutinizing the financial world, and is allowing investors to make more informed investment decisions in a space that is extremely complex. In this analysis, I will utilize an LSTM model to try and predict future price action of a stock like Apple(AAPL) to the best of my ability, to see if even a small amount of machine learning can increase the ROI of an investment by a considerable amount.
 
 # Dataset
 
-[In this section, desribe the dataset(s). This includes things like where you
-obtained the dataset. Include a full citation, as specified 
-[here](https://guides.lib.umich.edu/c.php?g=282964&p=3285995). Describe how the
-data was obtained by the data owner/curator, as best as you can. List the 
-variables that you plan to use in your analysis, for example:
+The dataset I will be using was found on NASDAQ's official website. This dataset is not available for download, instead it can be obtained through the NASDAQ python package. From there I can pull specific data that I need to create my own dataset. The data is free in the package, however in order to use it I must obtain an API key from their website by creating an account. The variables I plan to use in my analysis are the following:
+* date
+* open_price: price that the stock opened at on the given day
+* close_price: price that the stock closed at on the given day
+* high_price: the highest price that stock reached on the given day
+* low_price: the lowest price that stock reached on the given day
+* volume: number of shares traded on the given day
 
-* weight: The patient's weight (kg)
-* sex: The patient's sex, male or female
-* age: The patient's age (months)
-
-]
+“AAPL.” Nasdaq, www.nasdaq.com/market-activity/stocks/aapl. Accessed 8 Feb. 2024. 
 
 # Data Acquisition and Processing
 
-[In this section, if applicable, describe how you will obtain the data (if it's
-anything more complicated than a simple download). Discuss what data 
-processing steps will be needed, such as recoding variables, data cleaning,
-data tidying, imputing missing values, etc. See sections 1c, 1d, 1e in the 
-"Good Enough Practices" paper.]
+I will obtain this data through the NASDAQ python package. The data is not downloaded off of their website, instead I will be able to pull whatever data I need from the python package. From there I will need to delete any unwanted variables, replace any missing values, if any, and change variable names. There could be more data processing that I am unsure of, however it should be simple and straightforward data processing due to them keeping their data well maintained and up to date. The package allows users to gather all variables according to the given ticker symbol in the form of a dataset. 
 
 # Research Questions and Methodology
 
-[In this section, list each of the questions you will explore. Following each
-question, provide a detailed and specific plan for how you plan to answer the 
-question. Include the specific steps you will take, what form the answer will 
-take (a number? table? visualization? model? Give all the specifics), and 
-estimate how many hours each question will take to complete.]
+1. How well can we predict the future price action of AAPL? To answer this question, after gathering the data necessary, I will create an interactive candlestick graph that allows the reader to explore the price of AAPL on any given day. I may create moving averages and graph those aswell. Then, the creation of training and testing sets in preperation for the LSTM model will need to be made. After this, normalizing the data and training the model. After the model is trained I will explore the results and graph it visually for the reader as well.
 
-1. Is smoking correlated with diabetes? To answer this, I will create a filled
-bar plot, with the left bar representing non-smokers, the middle bar
-representing people who smoke moderately, and the right bar representing heavy
-smokers. The bars will be the same height, and each bar will be
-colored two colors based on the proportion of patients in the group who do or
-do not have diabetes.
-
-2. Question 2? Plan for question 2.
-
-3. Question 3? Plan for question 3.
-
-4. etc.
+2. How much better ROI is attainable using the trained model, than if not? To answer this model I will provide the reader with two seperate trading strategies. The first would be an average long term hold on AAPL spanning the course of a year. The initial purchase happening on Jan 1. and the position closed on Dec. 31. The second strategy will be using the model I trained and tested to make trades based on the results. (For example, if the model predicts the price a week from the initial purchase to be lower than the purchase price, the postion will be closed, and if the predicted price is higher than the purchase price from the previous purchase the postion will remain open.) I will then make a side-by-side bar plot showing the returns of both strategies both taking into consideration taxed and non-taxed, since long term and short term trading are taxed differently.
 
 # Work plan
 
-[Fill in the list below with a plan for what you will do each week, starting 2/12. You should
-have around 7 hours worth of work each week. Writing work counts. Several tasks
-have already been filled in for you.]
+**Week 4 (2/12 - 2/18):**
 
-**Week 4 (2/12 - 2/18):** [Just an example: 
-
-* Data tidying and recoding (4 hours)
-* Question 2 (4 hours).]
+* Data gathering, figuring out NASDAQ python package (4 hours)
+* Data tidying/processing (2 hours).
 
 **Week 5 (2/19 - 2/25):**
+* Creating an interactive candlestick graph of APPL stock (4 hours)
+* Moving averages and add them to seperate or interactive graph (3 hours)
 
 **Week 6 (2/26 - 3/3):**
+* Create training and testing sets (1 hour)
+* Normalize data and train the model (2 hours)
+* Graph the model results along with actual price, interpret results (4-5 hours)
 
 **Week 7 (3/4 - 3/10):**
 
@@ -91,10 +71,19 @@ have already been filled in for you.]
 * [Do not schedule any other tasks for this week.]
 
 **Week 10 (4/1 - 4/7):** 
+* Start question 2
+* Create necessary charts, yearly return without model
+* Try to get as far as possible figuring out how to gather the second trading strategy I mentioned previously (together 7 hours)
 
 **Week 11 (4/8 - 4/14):**
+* Finish question 2
+* plot returns of trading strategy 1+2 side-by-side, including and excluding tax (together 7 hours)
+
 
 **Week 12 (4/15 - 4/21):**
+* Write up and interpret results of enitre anlaysis
+* Make graphs and charts better, easier to understand
+* Any finishing touches (together 7 hours)
 
 **Week 13 (4/22 - 4/28):** *Blog post draft 1 due Sunday night 4/28.*
 [All project work should be done by the end of this 
@@ -113,37 +102,6 @@ week. The remaining time will be used for writing up and presenting your results
 * Blog post revisions (2 hours)
 * Peer feedback (2 hours)
 * [Do not schedule any other tasks for this week.]
-
-## Some cool Quarto stuff
-
-[You can delete this section from your proposal.]
-
-For your reference, here's an example of a Python code cell in Quarto,
-along with a figure that gets generated, along with a caption and a label
-so that it can be referred to automatically as "Figure 1" (or whatever)
-in the writeup.
-
-For a demonstration of a line plot on a polar axis, see @fig-polar.
-
-```{python}
-#| label: fig-polar
-#| fig-cap: "A line plot on a polar axis"
-
-import numpy as np
-import matplotlib.pyplot as plt
-
-r = np.arange(0, 2, 0.01)
-theta = 2 * np.pi * r
-fig, ax = plt.subplots(
-  subplot_kw = {'projection': 'polar'} 
-)
-ax.plot(theta, r)
-ax.set_rticks([0.5, 1, 1.5, 2])
-ax.grid(True)
-plt.show()
-```
-
-Here's an example of citing a source [see @phil99, pp. 33-35]. Be sure the source information is entered in "BibTeX" form in the `references.bib` file.
 
 # References
 
