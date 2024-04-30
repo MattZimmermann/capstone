@@ -3,6 +3,9 @@ title: "Forecasting Stock Price to Increase Investment Returns"
 subtitle: "Spring 2024"
 author: "Matthew Zimmermann"
 number-sections: false
+execute:
+  echo: true
+  expandbox: false
 format:
   html:
     theme: default
@@ -23,7 +26,7 @@ an impossible feat, and can still very much be so, however, with the introductio
 # Data Collection
 ## Importing Packages
 First, we must import all of the required packages and specify the stock we will be analyzing. 
-```{python, echo=TRUE}
+```{python}
 # Importing all required packages
 import numpy as np
 import pandas as pd
@@ -44,6 +47,8 @@ from pmdarima.arima import auto_arima
 from sklearn.metrics import mean_squared_error, mean_absolute_error, precision_score
 import warnings
 warnings.filterwarnings('ignore')
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 tick = 'AAPL'
 initial_balance = 10000
@@ -243,12 +248,14 @@ def create_arima(df, ticker):
    print("Hit Rate: %.2f%%" % rate_arima)
    print('Test RMSE: %.3f' % rmse_arima)
 
+   rmse_arima = round(rmse_arima, 2)
+   rate_arima = round(rate_arima, 2)
    return predictions, test, rmse_arima, rate_arima, model_name
 
 arima_variables = create_arima(data, tick)
 ```
 
-To analyze the accuracy of the model, I looked at two different things. The Root Mean Squared Error (RMSE), and the 'Hit-Rate'. The RMSE tells us how close the predicted values were to the actual closing price, on average, in dollars. The 'Hit-Rate' tells us the percentage of times the predicted values fell within 1% of the actual closing price. As we see here, this model was off by approximately $2.227, on average, and fell within 1% of the actual closing price 65.16% of the time.
+To analyze the accuracy of the model, I looked at two different things. The Root Mean Squared Error (RMSE), and the 'Hit-Rate'. The RMSE tells us how close the predicted values were to the actual closing price, on average, in dollars. The 'Hit-Rate' tells us the percentage of times the predicted values fell within 1% of the actual closing price. As we see here, this model was off by approximately $`{python} arima_variables[2]`, on average, and fell within 1% of the actual closing price about `{python} arima_variables[3]`% of the time.
 
 
 ## LSTM model
@@ -321,6 +328,7 @@ Similarly to the ARIMA model shown previously, we will be analyzing the same for
 
 # Results of Analysis
 In order to decide which model will be utilized to try and compete against the buy and hold strategy for a higher investment return, we must choose which form of accuracy is most important. Considering we are trying to maximimize how close we can get to predicting the actual closing price, the 'hit-rate' seems to be the best option for deciding which model to use in the simulation. 
+
 ## Comparison of Models
 ```{python}
 def compare_models(arima_variables, lstm_variables):
@@ -381,4 +389,4 @@ ending_balance_bah = buy_and_hold(initial_balance, actual_prices)
 print("Ending Balance for Buy and Hold Strategy: ${:.2f}".format(round(ending_balance_bah, 2)))
 ```
 
-After running the simulation on Apple stock, the model predictions were able to outperform the traditional buy and hold strategy by almost $600. So to answer the question of, "Can we predict the stock market?", the answer is... to an extent. The stock market is an extremely complex thing to try and predict, so being able to confidently say with certainty that you can predict the stock market is farfetched. However, this analysis shows that even a simple machine learning algorithm can help increase your return on invesment for certain stocks, and help earn a little extra money. 
+After running the simulation on Apple stock, the model predictions were able to outperform the traditional buy and hold strategy by a couple hundred dollars. So to answer the question of, "Can we predict the stock market?", the answer is... to an extent. The stock market is an extremely complex thing to try and predict, so being able to confidently say with certainty that you can predict the stock market is farfetched. However, this analysis shows that even a simple machine learning algorithm can help increase your return on invesment for certain stocks, and help earn a little extra money. 
