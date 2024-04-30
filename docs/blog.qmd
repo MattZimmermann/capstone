@@ -141,8 +141,8 @@ def yearly_returns(df, ticker):
 
     # Group data and calculate yearly return
     for year in range(df.index.min().year, df.index.max().year + 1):
-        start_date = pd.Timestamp(year, 1, 1)
-        end_date = pd.Timestamp(year, 12, 31)
+        start_date = df[df.index.year == year].index.min()
+        end_date = df[df.index.year == year].index.max()
         year_data = df[(df.index >= start_date) & (df.index <= end_date)]
         start_price = year_data.iloc[0]['Open']
         end_price = year_data.iloc[-1]['Close']
