@@ -58,7 +58,7 @@ initial_balance = 10000
 ```
 
 ## Gathering the Data
-The data that I will be using is stock data gathered from Yahoo Finance and is downloaded using the YFinance package. This data includes the Open, High, Low, Close, Adj. Close, and Volume for the given stock from 2018-2024. For later use in the analysis, I added a 'Return' column which calculates the return of that stock for each day available in the dataset.
+The data that I will be using is stock data gathered from Yahoo Finance and is downloaded using the [YFinance](https://pypi.org/project/yfinance/) package. This data includes the Open, High, Low, Close, Adj. Close, and Volume for the given stock from 2018-2024. For later use in the analysis, I added a 'Return' column which calculates the return of that stock for each day available in the dataset.
 ```{python}
 def create_dataset(ticker):
     # Gather data, preprocess, and add return column
@@ -140,7 +140,7 @@ candlestick_chart(data, tick)
 ```
 
 :::{.callout-note}
-'Candlesticks' are used in @candlestick_chart. More details about candlesticks can be found [here](https://www.investopedia.com/trading/candlestick-charting-what-is-it/).
+'Candlesticks' are used in the graph above. More details about candlesticks can be found [here](https://www.investopedia.com/trading/candlestick-charting-what-is-it/).
 :::
 
 ## Plotting Yearly Returns
@@ -176,7 +176,7 @@ def yearly_returns(df, ticker):
 yearly_returns(data, tick)
 ```
 
-@yearly-returns shows us the yearly return each year of Apple stock. We can see that since 2018, Apple has been a very good investment for long term holders. The only negative yearly returns that Apple has had since 2018, has been in 2018 and 2022, giving a negative return of -7.3% and -26.94% respectively. However, despite those negative returns, every other year has shown incredible gains, and has regained more than what was lost. The highest yearly return of Apple stock since 2018 was in 2019, where the stock showed a postive 89.59% gain, following that up with a 79.17% gain in 2020. At the time of making this analysis, we are still in the middle of 2024, so we cannot truly take into consideration the yearly return of 2024 shown here, however we can still keep it in mind that at the time of making this analysis, Apple is currently at a -2.59% return in 2024.
+This plot shows us the yearly return each year of Apple stock. We can see that since 2018, Apple has been a very good investment for long term holders. The only negative yearly returns that Apple has had since 2018, has been in 2018 and 2022, giving a negative return of -7.3% and -26.94% respectively. However, despite those negative returns, every other year has shown incredible gains, and has regained more than what was lost. The highest yearly return of Apple stock since 2018 was in 2019, where the stock showed a postive 89.59% gain, following that up with a 79.17% gain in 2020. At the time of making this analysis, we are still in the middle of 2024, so we cannot truly take into consideration the yearly return of 2024 shown here, however we can still keep it in mind that at the time of making this analysis, Apple is currently at a -2.59% return in 2024.
 
 # Model Creation
 In order to try and increase investment returns, we must first train a model that accurately predicts the stock's closing prices. To do this, I trained two seperate models to see which one is more accurate. Both models were trained on data from January 2018 to February 2023, and tested with data from February 2023 to February 2024.The models that I used for this analysis are Long Short-Term Memory (LSTM) and Auto-Regressive Integrated Moving Average (ARIMA).
@@ -211,7 +211,7 @@ def test_stationarity(timeseries):
 test_stationarity(data['Close'])
 ```
 
-The results of @stat-test shows that the data is not stationary. This can be seen where the rolling mean and standard deviation is not constant over the timeframe of the data. The p-value of the hypothesis test is greater than the confidence interval of 0.05, indicating that we cannot conclude that the data is stationary. So now we must difference the data to make it stationary so the ARIMA model can run properly.
+The results of the stationarity test shows that the data is not stationary. This can be seen where the rolling mean and standard deviation is not constant over the timeframe of the data. The p-value of the hypothesis test is greater than the confidence interval of 0.05, indicating that we cannot conclude that the data is stationary. So now we must difference the data to make it stationary so the ARIMA model can run properly.
 
 ## ARIMA model
 When creating the model, the use of the auto_arima() function allows the data to be automatically differenced along with the optimal p,d,q values to be found. These values control the autoregressive, differencing, and moving average components of the model, respectively.
@@ -275,7 +275,7 @@ def create_arima(df, ticker):
 arima_variables = create_arima(data, tick)
 ```
 
-To analyze the accuracy of the model, I looked at two different things. The Root Mean Squared Error (RMSE), and the 'Hit-Rate'. The RMSE tells us how close the predicted values were to the actual closing price, on average, in dollars. The 'Hit-Rate' tells us the percentage of times the predicted values fell within 1% of the actual closing price. As we see in @arima-model, this model was off by approximately $`{python} arima_variables[2]`, on average, and fell within 1% of the actual closing price about `{python} arima_variables[3]`% of the time.
+To analyze the accuracy of the model, I looked at two different things. The Root Mean Squared Error (RMSE), and the 'Hit-Rate'. The RMSE tells us how close the predicted values were to the actual closing price, on average, in dollars. The 'Hit-Rate' tells us the percentage of times the predicted values fell within 1% of the actual closing price. As you see above, this model was off by approximately $`{python} arima_variables[2]`, on average, and fell within 1% of the actual closing price about `{python} arima_variables[3]`% of the time.
 
 
 ## LSTM model
