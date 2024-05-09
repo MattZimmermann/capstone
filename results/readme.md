@@ -8,7 +8,7 @@ Packages that may require installation:
 
 To use this project the variable 'tick' needs to be updated to any stock on Yahoo Finance. The rest of the code is automated to work with eachother, so once the ticker is updated, the code should operate correctly. The results of each ticker may vary drastically, so in no way does this project work for every stock, in every timeframe.
 
-Some of the code was influenced/taken from Professor Tweneboah's Machine Learning course. There was an in-class assignment that analyzed timseries data using ARIMA and LSTM models. Both the LSTM and ARIMA model code was influenced but not taken from this assignment. However, the 'Stationarity Test' code was taken, but not in its entirety.
+Some of the code was influenced/taken from Professor Tweneboah's Machine Learning course. There was an in-class assignment that analyzed timseries data using ARIMA and LSTM models. Both the LSTM and ARIMA model code was influenced, but not taken from this assignment. However, the 'Stationarity Test' code was taken, but not in its entirety.
 All other code was produced by me using various documentation on the packages and or prior knowledge of code.
 
 All of the code for my project can be found in the blog.qmd file, however a different version of the code producing every plot of a chosen stock can be found in my 'project.ipynb' file located at, 'code/project.ipynb'.
