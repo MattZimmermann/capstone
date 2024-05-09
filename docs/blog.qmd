@@ -3,6 +3,9 @@ title: "Can You Beat the Stock Market Using Machine Learning?"
 subtitle: "Spring 2024"
 author: "Matthew Zimmermann"
 number-sections: false
+execute: 
+  enabled: true
+  onchange: true
 format:
   html:
     theme: default
@@ -18,7 +21,7 @@ jupyter: python3
 ![](https://soundsandcolours.com/static/2019/09/stocks-in-latin-america.jpg){fig-alt="A photo of price action from a stock."}
 
 Since the beggining of the financial markets, people have been trying to find every possible way to maximize a return on their investments. The golden question of, “can the stock market be predicted?” has been asked and studied for a long time. It seemed as if predicting the stock market was
-an impossible feat, and can still very much be so, however, with the introduction of machine learning into the financial world, it seems that the answer is getting closer and closer to being solved. Machine learning is revolutinizing the financial world, and is allowing investors to make more informed investment decisions in a space that is extremely complex. In this analysis, I will try to answer this question to the best of my abilities. I have created two models which will be compared and utilized to try and outperform a traditional buy and hold strategy, by using the models predicted values to make more informed and frequent trades.
+an impossible feat, and can still very much be so. However, with the introduction of machine learning into the financial world, it seems that the answer is getting closer and closer to being solved. Machine learning is revolutinizing the financial world, and is allowing investors to make more informed investment decisions in a space that is extremely complex. In this analysis, I will attempt to answer this question. I have created two models which will be compared and utilized to try and outperform a traditional buy and hold strategy, by using the models predicted values to make more informed and frequent trades.
 
 # Data Collection
 ## Importing Packages
@@ -50,7 +53,9 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, precision_s
 import warnings
 warnings.filterwarnings('ignore')
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+tf.get_logger().setLevel('INFO')
+tf.autograph.set_verbosity(0)
 
 # Specifying the ticker and balance
 tick = 'AAPL'
@@ -76,11 +81,11 @@ data.head(5)
 ```
 
 # Visualizing the Data
-Before training any models I wanted to be able to visualize the stock in a way that you would see on the average trading platform along with some extra technical indicators. The chart gives you the option to toggle on and off two seperate moving averages, which are a smoothed trend line that represents the average value of a series of data points over a specified period, helping to identify overall direction. The data points are displayed using 'candlesticks', which visualize multiple datapoints related to the stock price over a given timeframe. These datapoints include the open, close, high, and low over a month-long timeframe.
+Before training any models, I wanted to visualize the stock data in a way that would typically be seen on the average trading platform. Additionally, I added two technical indicators - the 50 day moving average and the 200 day moving average. The chart gives you the option to toggle on and off two seperate moving averages, which are a smoothed trend line that represents the average value of a series of data points over a specified period, helping to identify overall direction. The data points are displayed using 'candlesticks', which visualize multiple datapoints related to the stock price over a given timeframe. These datapoints include the open, close, high, and low over a month-long timeframe.
 ```{python}
 #| label: candlestick-chart
 #| fig-cap: "Figure 1: Candlestick Chart"
-def candlestick_chart(df, ticker):
+def candlestick_chart(df, ticker, display=True):
     # Create both 50 and 200 day moving average
     df['MA50'] = df['Close'].rolling(window=50).mean()
     df['MA200'] = df['Close'].rolling(window=200).mean()
@@ -133,10 +138,11 @@ def candlestick_chart(df, ticker):
 
     # Create and display figure
     fig = go.Figure(data=[candlestick, ma_50, ma_200], layout=layout)
-    fig.show()
+    if display:
+        fig.show()
 
 # Calling the function
-candlestick_chart(data, tick)
+candlestick_chart(data, tick, display=True)
 ```
 
 :::{.callout-note}
@@ -147,7 +153,7 @@ candlestick_chart(data, tick)
 ```{python}
 #| label: yearly-returns
 #| fig-cap: "Figure 2: Yearly Return Plot"
-def yearly_returns(df, ticker):
+def yearly_returns(df, ticker, display=True):
     yearly_returns = []
 
     # Group data and calculate yearly return
@@ -171,9 +177,10 @@ def yearly_returns(df, ticker):
                        yaxis=dict(title='Yearly Return (%)'))
 
     fig = go.Figure(data=[bar_trace], layout=layout)
-    fig.show()
+    if display:
+        fig.show()
 
-yearly_returns(data, tick)
+yearly_returns(data, tick, display=True)
 ```
 
 This plot shows us the yearly return each year of Apple stock. We can see that since 2018, Apple has been a very good investment for long term holders. The only negative yearly returns that Apple has had since 2018, has been in 2018 and 2022, giving a negative return of -7.3% and -26.94% respectively. However, despite those negative returns, every other year has shown incredible gains, and has regained more than what was lost. The highest yearly return of Apple stock since 2018 was in 2019, where the stock showed a postive 89.59% gain, following that up with a 79.17% gain in 2020. At the time of making this analysis, we are still in the middle of 2024, so we cannot truly take into consideration the yearly return of 2024 shown here, however we can still keep it in mind that at the time of making this analysis, Apple is currently at a -2.59% return in 2024.
@@ -192,6 +199,7 @@ In order for the ARIMA model to be created, the time series data must be station
 #| fig-cap: "Figure 3: Stationarity Test"
 # Test if the data is stationary and visualize it
 def test_stationarity(timeseries):
+    # Plot rolling mean and std deviation
     rolmean = timeseries.rolling(12).mean()
     rolstd = timeseries.rolling(12).std()
     plt.figure(figsize=(15,5))
@@ -202,9 +210,11 @@ def test_stationarity(timeseries):
     plt.title('Rolling Mean and Standard Deviation')
     plt.show(block=False)
     print("Results of dickey fuller test")
+    # ADF test (Hypothesis test for stationarity)
     adft = adfuller(timeseries,autolag='AIC')
     output = pd.Series(adft[0:4],index=['Test Statistics','p-value','No. of lags used','Number of observations used'])
     print(output)
+    # Return true/false based on hypothesis test results
     is_stationary = adft[1] < 0.05
     return is_stationary
 
@@ -218,7 +228,7 @@ When creating the model, the use of the auto_arima() function allows the data to
 ```{python}
 #| label: arima-model
 #| fig-cap: "Figure 4: ARIMA Model"
-def create_arima(df, ticker):
+def create_arima(df, ticker, display=True):
    # Split data into training and testing sets
    model_name = "ARIMA"
    df_train = df[df.index < '2023-02-02']
@@ -262,17 +272,17 @@ def create_arima(df, ticker):
    fig.add_trace(go.Scatter(x=df_train.index,y=df_train.Close,name='Training Data'))
    fig.add_trace(go.Scatter(x=df_valid.index,y=df_valid.Close,name='Testing Data'))
    fig.add_trace(go.Scatter(x=df_valid.index,y=predictions,name='Forecasted Data'))
-   fig.show()
+   if display:
+        fig.show()
+        # Print accuracy rates of model
+        print("Hit Rate: %.2f%%" % rate_arima)
+        print('Test RMSE: %.3f' % rmse_arima)
+        rmse_arima = round(rmse_arima, 2)
+        rate_arima = round(rate_arima, 2)
 
-   # Print accuracy rates of model
-   print("Hit Rate: %.2f%%" % rate_arima)
-   print('Test RMSE: %.3f' % rmse_arima)
-
-   rmse_arima = round(rmse_arima, 2)
-   rate_arima = round(rate_arima, 2)
    return predictions, test, rmse_arima, rate_arima, model_name
 
-arima_variables = create_arima(data, tick)
+arima_variables = create_arima(data, tick, display=True)
 ```
 
 To analyze the accuracy of the model, I looked at two different things. The Root Mean Squared Error (RMSE), and the 'Hit-Rate'. The RMSE tells us how close the predicted values were to the actual closing price, on average, in dollars. The 'Hit-Rate' tells us the percentage of times the predicted values fell within 1% of the actual closing price. As you see above, this model was off by approximately $`{python} arima_variables[2]`, on average, and fell within 1% of the actual closing price about `{python} arima_variables[3]`% of the time.
@@ -282,7 +292,8 @@ To analyze the accuracy of the model, I looked at two different things. The Root
 ```{python}
 #| label: lstm-model
 #| fig-cap: "Figure 5: LSTM Model"
-def create_lstm(df, ticker):
+def create_lstm(df, ticker, display=True):
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
     # Splitting data into training and testing sets
     model_name = str("LSTM")
     df_train = df[df.index < '2023-02-02']
@@ -326,7 +337,6 @@ def create_lstm(df, ticker):
     fig.add_trace(go.Scatter(x=df_train.index, y=df_train.Close, name='Training Data'))
     fig.add_trace(go.Scatter(x=df_valid.index, y=df_valid.Close, name='Testing Data'))
     fig.add_trace(go.Scatter(x=df_valid.index[:-1], y=predicted_price, name='Forecasted Data'))
-    fig.show()
 
     # Calculate the RMSE
     rmse_lstm = math.sqrt(mean_squared_error(test_lstm[1:], predicted_price))
@@ -341,12 +351,14 @@ def create_lstm(df, ticker):
     rmse_lstm = round(rmse_lstm, 2)
     rate_lstm = round(rate_lstm, 2)
 
-    print("Hit Rate: %.2f%%" % rate_lstm)
-    print('Test RMSE: %.3f' % rmse_lstm)
+    if display:
+        fig.show()
+        print("Hit Rate: %.2f%%" % rate_lstm)
+        print('Test RMSE: %.3f' % rmse_lstm)
 
     return predicted_price, test_lstm[1:], rmse_lstm, rate_lstm, model_name
 
-lstm_variables = create_lstm(data, tick)
+lstm_variables = create_lstm(data, tick, display=True)
 ```
 
 Similarly to the ARIMA model shown previously, we will be analyzing the LSTM model using the same forms of accuracy. The RMSE and 'Hit-Rate' of the model have been calculated and shown above. The LSTM model was off by approximately $`{python} lstm_variables[2]`, on average, and fell within 1% of the actual closing price about `{python} lstm_variables[3]`% of the time.
@@ -357,15 +369,19 @@ In order to decide which model will be utilized to try and compete against the b
 ## Comparison of Models
 ```{python}
 #| code-fold: false
-def compare_models(arima_variables, lstm_variables):
+# Check which model has a higher 'hit rate'
+# Return the contents of the better model
+def compare_models(arima_variables, lstm_variables, display=True):
     if arima_variables[3] > lstm_variables[3]:
-        print("The ARIMA model is the more accurate model.")
+        if display:
+            print("The ARIMA model is the more accurate model.")
         return arima_variables
     else:
-        print("The LSTM model is the more accurate model.")
+        if display:
+            print("The LSTM model is the more accurate model.")
         return lstm_variables
     
-chosen_model = compare_models(arima_variables, lstm_variables)
+chosen_model = compare_models(arima_variables, lstm_variables, display=True)
 ```
 
 Now that we have concluded that the hit-rate is the most appropriate form of accuracy to choose the best model, we must compare the hit-rate of both models to see which one is higher. This function compares the two models to see which one has a higher hit-rate. The reason this must be calculated in the form of a function is that, if using a stock other than Apple, the ARIMA model may not be the more accurate model. This is why we must make this a function, so that the correct model gets chosen for each stock being tested.
@@ -379,7 +395,7 @@ def buy_and_hold(initial_balance, closing_prices):
     # Find initial and ending closing price
     initial_price = closing_prices[0]
     final_price = closing_prices[-1]
-    # Calculate num of shares and ending balance
+    # Calculate number of shares and ending balance
     shares_bought = initial_balance / initial_price
     final_balance = shares_bought * final_price
     return final_balance
@@ -390,13 +406,15 @@ def model_trading_strategy(initial_balance, actual_prices, predictions):
     position_open = False
     buy_price = None
     shares = 0
-    # Iterate through the predictions; buy and sell if next day is higher/lower than previous
+    # Iterate through the predictions
     for i in range(1, len(predictions)):
+        # Open position if predicted value is higher than previous day
         if predictions[i] > predictions[i - 1] and not position_open:
             buy_price = actual_prices[i-1]
             shares = balance / buy_price
             balance -= shares * buy_price
             position_open = True
+        # Close position if predicted value is lower than the previous days
         elif predictions[i] < predictions[i - 1] and position_open:
             sell_price = actual_prices[i-1]
             balance += shares * sell_price
@@ -417,4 +435,48 @@ ending_balance_bah = buy_and_hold(initial_balance, actual_prices)
 print("Ending Balance for Buy and Hold Strategy: ${:.2f}".format(round(ending_balance_bah, 2)))
 ```
 
-After running the simulation on Apple stock, the model predictions were able to outperform the traditional buy and hold strategy by approximately $615. So to answer the question of, "Can we predict the stock market?", the answer is... to an extent. The stock market is an extremely complex thing to try and predict, so being able to confidently say with certainty that you can predict the stock market is farfetched. The strategy I created for utilizing the model predictions is simple and has flaws. Although in this instance it provided an increase in return, it is not guranteed that it will work everytime, for every stock, in every timeframe. However, this analysis proves that machine learning can provide you with an edge in the market, and increase your investment returns.
+After running the simulation on Apple stock, the model predictions were able to outperform the traditional buy and hold strategy by approximately $615. To answer the question of, "Can we predict the stock market?", the answer is... to an extent. The stock market is an extremely complex thing to try and predict, so being able to say with certainty that you can predict the stock market is farfetched. The strategy I created for utilizing the model predictions is simple and has flaws. Although in this instance it provided an increase in return, it is not guranteed that it will work everytime, for every stock, in every timeframe. However, this analysis proves that machine learning can provide you with an edge in the market, and increase your investment returns.
+
+# Testing Other Stocks
+```{python}
+#| code-fold: false
+# Define function to run whole program
+def simulation(ticker):
+    data = create_dataset(ticker)
+    candlestick_chart(data, ticker, display=True)
+    yearly_returns(data, ticker, display=False)
+    arima_variables = create_arima(data, ticker, display=False)
+    lstm_variables = create_lstm(data, ticker, display=False)
+    chosen_model = compare_models(arima_variables, lstm_variables, display=False)
+    actual_prices = chosen_model[1]
+    predictions = chosen_model[0]
+    ending_balance_model = model_trading_strategy(initial_balance, predictions, actual_prices)
+    # Display the simulation results
+    print(f"Ending Balance for {chosen_model[4]} Strategy: ${ending_balance_model:.2f}")
+    ending_balance_bah = buy_and_hold(initial_balance, actual_prices)
+    print("Ending Balance for Buy and Hold Strategy: ${:.2f}".format(round(ending_balance_bah, 2)))
+```
+
+Now that we have completed a full analysis of Apple stock, we can look at other stocks to see if the simulation provides an increased return on them as well. The above code executes the entire simulation and displays the ending balances along with its respective candlestick graph.
+```{python}
+# Run simulation with ticker 'F'
+simulation('F')
+```
+
+The first stock that we will run the simulation on is Ford Motor Company (F). The results from running the simulation on this stock showed a massive increase in returns. Given that the simulation starts at $10,000, the model increased the return on investment from a loss of nearly 10% to an gain of approximately 26%.
+
+```{python}
+# Run simulation with ticker 'F'
+simulation('DIS')
+```
+
+The next stock we will run the simulation on is The Walt Disney Company (DIS). The simulation showed that it also gave an increased return compared to the buy and hold strategy. The model results provided an gain of approximately 8%, whereas the buy and hold strategy provided a loss of approximately 1%.
+```{python}
+# Run simulation with ticker 'F'
+simulation('AMZN')
+```
+
+The final stock we will be looking at is Amazon.com Inc. (AMZN). The results of the simulation ran on AMZN showed a massive loss of return compared to the buy and hold strategy. Even though the model results provided a gain of approximately 29%, just buying and holding the stock over the same period would have resulted in a gain of 58%. 
+
+### Final Takeaway
+These reuslts further prove the point that the stock market is extremely diffucult to predict. Even though machine learning can help to increase a return on investment in certain scenarios, it is not the case that we can accurately predict every stock, for every time period, everytime. However, it is still a good tool to gain further insight into certain stocks, and in some cases, increase investment returns and "beat the market."
